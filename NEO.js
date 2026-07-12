@@ -712,4 +712,8 @@ document.addEventListener("DOMContentLoaded", () => {
     initContactForm();
     initGlobalEvents();
     updateCartUI();
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 446d4325204fcd26b0a55d563c2a2582f5d84472
