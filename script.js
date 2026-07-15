@@ -1,4 +1,4 @@
-// CATÁLOGO NATURALEZA
+// ===================== CATÁLOGO NATURALEZA (32 productos) =====================
 const productosNaturaleza = [
     { id: 1, nombre: "Aceite de Coco Extra Virgen", categoria: "corporal", descripcion: "Perfecto para fortalecer y dar vitalidad a las fibras capilares, estimula el crecimiento del cabello, repara puntas abiertas, es un excelente hidratante para tu piel y cabello, estimula la regeneración de la piel, te ayuda a desmaquillar incluso el maquillaje a prueba de agua sin maltratar tu rostro, es un aceite natural prensado en frío que le puedes dar tanto uso cosmético como culinario, excelente para freídos no profundos.", descCorta: "Multiusos: hidrata piel y cabello, desmaquilla, repara puntas.", imagen: "Fotos/AceiteCoco.jpg.jpeg", presentaciones: [{ tamaño: "125 gr", precio: 16000, precioTexto: "$16.000" }, { tamaño: "250 gr", precio: 26000, precioTexto: "$26.000" }, { tamaño: "500 gr", precio: 42000, precioTexto: "$42.000" }] },
     { id: 2, nombre: "Aceite de Argán Puro", categoria: "corporal", descripcion: "30 ml. Este maravilloso aceite es increíble para fortalecer y reparar tu cabello, tus cejas y lo mejor tus pestañas, gracias a todos sus ácidos grasos es realmente un reparador natural.", descCorta: "Repara cabello, cejas y pestañas. Antioxidante.", imagen: "Fotos/AceiteArgan.jpg.jpeg", presentaciones: [{ tamaño: "30 ml", precio: 16000, precioTexto: "$16.000" }] },
@@ -34,7 +34,7 @@ const productosNaturaleza = [
     { id: 32, nombre: "Bálsamo Hidratante para Mascotas", categoria: "mascotas", descripcion: "35 gr. Bálsamo hidratante formulado con ingredientes 100% naturales, seguros y comestibles, ideal para cuidar la piel y las patitas de tu peludo.", descCorta: "Hidrata la piel y el pelaje, previene la sequedad.", imagen: "Fotos/BalsamoMascotas.jpg.jpeg", presentaciones: [{ tamaño: "35 gr", precio: 17000, precioTexto: "$17.000" }] }
 ];
 
-//  CATÁLOGO JABBERWOCK 
+// ===================== CATÁLOGO JABBERWOCK =====================
 // 30 ml → $16.500 | 60 ml → $28.000 | 100 ml → $45.000
 
 // ---------- CABALLERO ----------
@@ -339,7 +339,7 @@ const modeConfig = {
         heroTitle: 'Jabberwock',
         heroDesc: 'Esencia pura, aromas inolvidables.<br>Fragancias que cuentan historias.',
         aboutTitle: 'Nuestra esencia',
-        aboutDesc: 'En Jabberwock creamos lociones y perfumes artesanales con ingredientes de la más alta calidad. Cada fragancia está diseñada para evocar emociones y acompañarte en tu día a día..',
+        aboutDesc: 'En Jabberwock creamos lociones y perfumes artesanales con ingredientes de la más alta calidad. Cada fragancia está diseñada para evocar emociones y acompañarte en tu día a día.',
         aboutSignature: 'Jabberwock',
         logoImg: 'foto2.jpg.jpeg',
         favicon: 'foto2.jpg.jpeg',
@@ -364,8 +364,19 @@ let pendingProduct = null;
 function updateCartUI() {
     const totalQty = cartItems.reduce((sum, i) => sum + i.cantidad, 0);
     const cartCountSpan = document.getElementById("cartCount");
-    if (cartCountSpan) cartCountSpan.innerText = totalQty;
+    if (cartCountSpan) {
+        cartCountSpan.innerText = totalQty;
+        cartCountSpan.classList.remove('pulse');
+        void cartCountSpan.offsetWidth;
+        cartCountSpan.classList.add('pulse');
+        setTimeout(() => cartCountSpan.classList.remove('pulse'), 400);
+    }
     localStorage.setItem("cart", JSON.stringify(cartItems));
+}
+
+function getProductById(id, mode) {
+    const products = modeConfig[mode].productos;
+    return products.find(p => p.id === id);
 }
 
 function addToCartWithOptions(product, size, price, priceText) {
@@ -394,6 +405,136 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
+// ===================== CARRITO MODAL MEJORADO =====================
+function showCartModal() {
+    const oldOverlay = document.querySelector('.cart-modal-overlay');
+    if (oldOverlay) oldOverlay.remove();
+
+    if (cartItems.length === 0) {
+        const overlay = document.createElement('div');
+        overlay.className = 'cart-modal-overlay active';
+        overlay.innerHTML = `
+            <div class="cart-modal">
+                <div class="cart-modal__header">
+                    <h3>🛍️ Tu carrito</h3>
+                    <span class="cart-modal__close" onclick="this.closest('.cart-modal-overlay').classList.remove('active')">&times;</span>
+                </div>
+                <div class="cart-empty">🌿 Tu carrito está vacío. ¡Agrega productos!</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'cart-modal-overlay active';
+
+    let itemsHtml = '';
+    let subtotal = 0;
+    cartItems.forEach((item, index) => {
+        const prod = getProductById(item.id, item.mode);
+        const imgSrc = prod ? prod.imagen : 'https://placehold.co/60x60/e7d9c5/2b5e3b?text=Producto';
+        const itemTotal = item.precioNum * item.cantidad;
+        subtotal += itemTotal;
+        itemsHtml += `
+            <div class="cart-item" data-index="${index}">
+                <img class="cart-item__img" src="${imgSrc}" alt="${item.nombre}" onerror="this.src='https://placehold.co/60x60/e7d9c5/2b5e3b?text=Producto'">
+                <div class="cart-item__info">
+                    <div class="cart-item__name">${item.nombre}</div>
+                    <div class="cart-item__size">${item.size}</div>
+                    <div class="cart-item__price">${item.precio}</div>
+                    <div class="cart-item__controls">
+                        <button class="cart-qty-decr" data-index="${index}">−</button>
+                        <span class="cart-item__qty">${item.cantidad}</span>
+                        <button class="cart-qty-incr" data-index="${index}">+</button>
+                        <button class="cart-item__remove" data-index="${index}"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    const total = subtotal;
+
+    overlay.innerHTML = `
+        <div class="cart-modal">
+            <div class="cart-modal__header">
+                <h3>🛍️ Tu carrito</h3>
+                <span class="cart-modal__close" onclick="this.closest('.cart-modal-overlay').classList.remove('active')">&times;</span>
+            </div>
+            <div class="cart-items">
+                ${itemsHtml}
+            </div>
+            <div class="cart-summary">
+                <div class="cart-summary__row">
+                    <span>Subtotal (${cartItems.reduce((s, i) => s + i.cantidad, 0)} artículos)</span>
+                    <span>$${subtotal.toLocaleString('es-CO')}</span>
+                </div>
+                <div class="cart-summary__row cart-summary__total">
+                    <span>Total</span>
+                    <span>$${total.toLocaleString('es-CO')}</span>
+                </div>
+            </div>
+            <div class="cart-actions">
+                <button class="btn-clear" id="clearCartBtn"><i class="fas fa-trash-alt"></i> Vaciar</button>
+                <button class="btn-whatsapp" id="whatsappOrderBtn"><i class="fab fa-whatsapp"></i> Enviar pedido</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelectorAll('.cart-qty-incr').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const idx = parseInt(this.dataset.index);
+            cartItems[idx].cantidad++;
+            updateCartUI();
+            showCartModal();
+        });
+    });
+    overlay.querySelectorAll('.cart-qty-decr').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const idx = parseInt(this.dataset.index);
+            if (cartItems[idx].cantidad > 1) {
+                cartItems[idx].cantidad--;
+            } else {
+                cartItems.splice(idx, 1);
+            }
+            updateCartUI();
+            showCartModal();
+        });
+    });
+    overlay.querySelectorAll('.cart-item__remove').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const idx = parseInt(this.dataset.index);
+            cartItems.splice(idx, 1);
+            updateCartUI();
+            showCartModal();
+        });
+    });
+
+    overlay.querySelector('#clearCartBtn')?.addEventListener('click', () => {
+        cartItems = [];
+        updateCartUI();
+        overlay.classList.remove('active');
+        showToast('Carrito vaciado');
+    });
+
+    overlay.querySelector('#whatsappOrderBtn')?.addEventListener('click', () => {
+        const total = cartItems.reduce((sum, i) => sum + (i.precioNum * i.cantidad), 0);
+        sendOrderByWhatsApp(total);
+    });
+}
+
+function sendOrderByWhatsApp(total) {
+    let message = `*🛒 NUEVO PEDIDO - ${modeConfig[currentMode].brandName}*%0A%0A`;
+    cartItems.forEach(item => {
+        message += `• ${item.nombre} (${item.size}) x${item.cantidad} → ${item.precio} c/u%0A`;
+    });
+    message += `%0A💰 *Total:* $${total.toLocaleString('es-CO')}%0A%0A📦 ¡Gracias por tu compra!`;
+    window.open(`https://wa.me/573214058442?text=${message}`, "_blank");
+}
+
 // ===================== CAMBIO DE MODO =====================
 function switchMode(mode) {
     if (mode === currentMode) return;
@@ -416,8 +557,20 @@ function switchMode(mode) {
     document.getElementById('aboutSignature').textContent = config.aboutSignature;
     document.getElementById('aboutImg').src = config.logoImg;
     
+    // ---- CONTROL DE LA SECCIÓN VIDA ÚTIL ----
+    const shelfSection = document.getElementById('vida-util');
+    if (shelfSection) {
+        if (mode === 'naturaleza') {
+            shelfSection.classList.remove('hidden-mode');
+        } else {
+            shelfSection.classList.add('hidden-mode');
+        }
+    }
+    // -----------------------------------------
+    
     renderFilters(mode);
     renderProducts(currentCategory);
+    initFeaturedCarousel();
     
     localStorage.setItem('mode', mode);
     showToast(`🌿 Cambiado a ${config.brandName}`);
@@ -450,6 +603,70 @@ function initFilters() {
             renderProducts(currentCategory);
         });
     });
+}
+
+// ===================== BUSCADOR AVANZADO =====================
+function initSearch() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const productos = getCurrentProducts();
+            const filtered = productos.filter(p => 
+                p.nombre.toLowerCase().includes(searchTerm) ||
+                (p.casa && p.casa.toLowerCase().includes(searchTerm)) ||
+                p.descCorta.toLowerCase().includes(searchTerm)
+            );
+            const grid = document.getElementById('productsGrid');
+            if (!grid) return;
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="empty-message" style="text-align:center; padding:2rem;">No se encontraron productos para "${this.value}" 🌿</div>`;
+                return;
+            }
+            renderProductList(filtered);
+        });
+    }
+}
+
+// ===================== CARRUSEL DE PRODUCTOS DESTACADOS =====================
+function initFeaturedCarousel() {
+    const productos = getCurrentProducts();
+    const featured = productos.slice(0, 8);
+    const wrapper = document.getElementById('featuredWrapper');
+    if (!wrapper) return;
+    
+    wrapper.innerHTML = featured.map(p => {
+        const priceRange = getPriceRange(p);
+        const brandDisplay = p.casa ? `<div class="brand">${p.casa}</div>` : '';
+        return `
+            <div class="swiper-slide">
+                <div class="featured-card">
+                    <img src="${p.imagen}" alt="${p.nombre}" loading="lazy" onerror="this.src='https://placehold.co/600x400/e7d9c5/2b5e3b?text=Producto'">
+                    <div class="featured-card-content">
+                        <h3>${p.nombre}</h3>
+                        ${brandDisplay}
+                        <div class="price">${priceRange}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    if (typeof Swiper !== 'undefined') {
+        new Swiper('.featured-swiper', {
+            loop: true,
+            autoplay: { delay: 4000, disableOnInteraction: false },
+            pagination: { el: '.swiper-pagination', clickable: true },
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            slidesPerView: 1,
+            spaceBetween: 20,
+            breakpoints: {
+                640: { slidesPerView: 2, spaceBetween: 20 },
+                768: { slidesPerView: 3, spaceBetween: 30 },
+                1024: { slidesPerView: 4, spaceBetween: 30 }
+            }
+        });
+    }
 }
 
 // ===================== MODALES =====================
@@ -490,42 +707,93 @@ function showModal(product) {
     if (product.presentaciones.length > 1) {
         const minPrice = Math.min(...product.presentaciones.map(p => p.precio));
         const maxPrice = Math.max(...product.presentaciones.map(p => p.precio));
-        document.getElementById("modalPrice").innerHTML = `Desde $${minPrice.toLocaleString()} hasta $${maxPrice.toLocaleString()} COP`;
+        document.getElementById("modalPrice").innerHTML = `Desde $${minPrice.toLocaleString('es-CO')} hasta $${maxPrice.toLocaleString('es-CO')} COP`;
     } else {
         document.getElementById("modalPrice").innerHTML = `${product.presentaciones[0].precioTexto} COP`;
     }
     document.getElementById("modalImage").src = product.imagen;
     modal.style.display = "flex";
+
+    showRelatedProducts(product);
 }
 
 function closeModal() {
     document.getElementById("productModal").style.display = "none";
 }
 
+// ===================== PRODUCTOS RELACIONADOS =====================
+function showRelatedProducts(product) {
+    const container = document.getElementById("relatedProducts");
+    if (!container) return;
+    const productos = getCurrentProducts();
+    let relacionados = productos.filter(p => p.id !== product.id);
+    if (product.casa) {
+        let sameCasa = relacionados.filter(p => p.casa === product.casa);
+        if (sameCasa.length >= 4) {
+            relacionados = sameCasa;
+        } else {
+            let sameCat = relacionados.filter(p => p.categoria === product.categoria);
+            if (sameCat.length >= 4) {
+                relacionados = sameCat;
+            } else {
+                relacionados = relacionados.filter(p => p.categoria === product.categoria || p.casa === product.casa);
+            }
+        }
+    } else {
+        relacionados = relacionados.filter(p => p.categoria === product.categoria);
+    }
+    relacionados = relacionados.slice(0, 4);
+
+    if (relacionados.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = `<h4>🌿 Productos relacionados</h4><div class="related-grid">`;
+    relacionados.forEach(p => {
+        const price = getPriceRange(p);
+        html += `
+            <div class="related-item" data-id="${p.id}">
+                <img src="${p.imagen}" alt="${p.nombre}" onerror="this.src='https://placehold.co/100x80/e7d9c5/2b5e3b?text=Producto'">
+                <div class="name">${p.nombre}</div>
+                <div class="price">${price}</div>
+            </div>
+        `;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+
+    container.querySelectorAll('.related-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const id = parseInt(this.dataset.id);
+            const prod = getCurrentProducts().find(p => p.id === id);
+            if (prod) {
+                closeModal();
+                setTimeout(() => showModal(prod), 300);
+            }
+        });
+    });
+}
+
 // ===================== RENDERIZADO DE PRODUCTOS =====================
 function getPriceRange(product) {
-    if (product.presentaciones.length === 1) return product.presentaciones[0].precioTexto;
+    if (product.presentaciones.length === 1) {
+        return product.presentaciones[0].precioTexto;
+    }
     const precios = product.presentaciones.map(p => p.precio);
-    return `$${Math.min(...precios).toLocaleString()} - $${Math.max(...precios).toLocaleString()}`;
+    const min = Math.min(...precios);
+    const max = Math.max(...precios);
+    return `$${min.toLocaleString('es-CO')} - $${max.toLocaleString('es-CO')}`;
 }
 
 function getCurrentProducts() {
     return modeConfig[currentMode].productos;
 }
 
-function renderProducts(category) {
-    const grid = document.getElementById("productsGrid");
+function renderProductList(productList) {
+    const grid = document.getElementById('productsGrid');
     if (!grid) return;
-    
-    const productos = getCurrentProducts();
-    const filtered = category === "all" ? productos : productos.filter(p => p.categoria === category);
-    
-    if (filtered.length === 0) {
-        grid.innerHTML = `<div class="empty-message" style="text-align:center; padding:2rem;">No hay productos en esta categoría 🌿</div>`;
-        return;
-    }
-    
-    grid.innerHTML = filtered.map(p => {
+    grid.innerHTML = productList.map(p => {
         let catLabel = "";
         switch(p.categoria) {
             case "facial": catLabel = "Cuidado Facial"; break;
@@ -556,7 +824,6 @@ function renderProducts(category) {
             </div>
         `;
     }).join("");
-    
     document.querySelectorAll(".btn-detail").forEach(btn => {
         btn.addEventListener("click", () => {
             const prod = getCurrentProducts().find(p => p.id === parseInt(btn.dataset.id));
@@ -578,55 +845,48 @@ function renderProducts(category) {
     });
 }
 
-// ===================== CARRITO MODAL =====================
-function showCartModal() {
-    if (cartItems.length === 0) {
-        alert("🌿 Tu carrito está vacío. ¡Agrega productos!");
+function renderProducts(category) {
+    const grid = document.getElementById("productsGrid");
+    if (!grid) return;
+    
+    const productos = getCurrentProducts();
+    const filtered = category === "all" ? productos : productos.filter(p => p.categoria === category);
+    
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-message" style="text-align:center; padding:2rem;">No hay productos en esta categoría 🌿</div>`;
         return;
     }
-    let modal = document.getElementById("cartModal");
-    if (!modal) {
-        modal = document.createElement("div");
-        modal.id = "cartModal";
-        modal.className = "cart-modal";
-        document.body.appendChild(modal);
-    }
-    let itemsHtml = "";
-    let total = 0;
-    cartItems.forEach(item => {
-        let subtotal = item.precioNum * item.cantidad;
-        total += subtotal;
-        itemsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:0.8rem;">
-                        <span>${item.nombre} (${item.size}) x${item.cantidad}</span>
-                        <span>$${subtotal.toLocaleString()}</span>
-                      </div>`;
-    });
-    modal.innerHTML = `
-        <h3>🛍️ Tu pedido</h3>
-        <div class="cart-items-list">${itemsHtml}</div>
-        <div class="cart-total">Total: $${total.toLocaleString()}</div>
-        <button class="btn btn--secondary" id="clearCartBtn">Vaciar carrito</button>
-        <button class="whatsapp-checkout" id="whatsappOrderBtn"><i class="fab fa-whatsapp"></i> Enviar pedido por WhatsApp</button>
-        <button class="btn-close-cart" style="margin-top:0.5rem; background:none; border:none; cursor:pointer;">Cerrar</button>
-    `;
-    modal.classList.add("active");
-    document.getElementById("clearCartBtn")?.addEventListener("click", () => {
-        cartItems = [];
-        updateCartUI();
-        modal.classList.remove("active");
-        showToast("Carrito vaciado");
-    });
-    document.getElementById("whatsappOrderBtn")?.addEventListener("click", () => sendOrderByWhatsApp(total));
-    modal.querySelector(".btn-close-cart")?.addEventListener("click", () => modal.classList.remove("active"));
+    renderProductList(filtered);
 }
 
-function sendOrderByWhatsApp(total) {
-    let message = `*🛒 NUEVO PEDIDO - ${modeConfig[currentMode].brandName}*%0A%0A`;
-    cartItems.forEach(item => {
-        message += `• ${item.nombre} (${item.size}) x${item.cantidad} → ${item.precio} c/u%0A`;
-    });
-    message += `%0A💰 *Total:* $${total.toLocaleString()}%0A%0A📦 ¡Gracias por tu compra!`;
-    window.open(`https://wa.me/573214058442?text=${message}`, "_blank");
+// ===================== FORMULARIO DE CONTACTO =====================
+function initContactForm() {
+    const form = document.getElementById("contactForm");
+    if (form) {
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            const successModal = document.getElementById("successModal");
+            if (successModal) {
+                successModal.style.display = "flex";
+            }
+            
+            fetch('https://formsubmit.co/ajax/jabberwock432@gmail.com', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Mensaje enviado:', data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+            
+            this.reset();
+        });
+    }
 }
 
 // ===================== INICIALIZACIONES =====================
@@ -676,22 +936,23 @@ function initSmoothScroll() {
     });
 }
 
-function initContactForm() {
-    const form = document.getElementById("contactForm");
-    if (form) {
-        form.addEventListener("submit", (e) => {
-            // FormSubmit maneja el envío
-        });
-    }
-}
-
 function initGlobalEvents() {
     document.getElementById("cartIcon")?.addEventListener("click", showCartModal);
     document.getElementById("closeModalBtn")?.addEventListener("click", closeModal);
     document.getElementById("closeOptionsModal")?.addEventListener("click", closeOptionsModal);
+    
+    document.getElementById("closeSuccessModal")?.addEventListener("click", () => {
+        document.getElementById("successModal").style.display = "none";
+    });
+    document.getElementById("closeSuccessBtn")?.addEventListener("click", () => {
+        document.getElementById("successModal").style.display = "none";
+    });
     window.addEventListener("click", (e) => {
         if (e.target === document.getElementById("productModal")) closeModal();
         if (e.target === document.getElementById("optionsModal")) closeOptionsModal();
+        if (e.target === document.getElementById("successModal")) {
+            document.getElementById("successModal").style.display = "none";
+        }
     });
     
     document.getElementById("logoContainer")?.addEventListener("click", () => {
@@ -706,6 +967,9 @@ document.addEventListener("DOMContentLoaded", () => {
     switchMode(savedMode);
     
     renderProducts("all");
+    initFilters();
+    initSearch();
+    initFeaturedCarousel();
     initAOS();
     initMobileMenu();
     initSmoothScroll();
