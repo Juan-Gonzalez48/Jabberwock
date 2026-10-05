@@ -977,3 +977,133 @@ document.addEventListener("DOMContentLoaded", () => {
     initGlobalEvents();
     updateCartUI();
 });
+
+// =====================================================
+// 🎃 TEMA HALLOWEEN · Octubre
+// -----------------------------------------------------
+// · Se activa automáticamente durante octubre.
+// · Toggle manual con el botón flotante 🎃.
+// · La preferencia manual se guarda en localStorage
+//   ('halloweenMode' = 'on' | 'off' | auto).
+// · No interfiere con script.js ni con el cambio de modo.
+// =====================================================
+
+(function () {
+    'use strict';
+
+    const STORAGE_KEY = 'halloweenMode';
+    const MONTH_OCTOBER = 9; // getMonth() es 0-indexado: 9 = octubre
+
+    // ---------------------------------------------------
+    // ¿Estamos en octubre?
+    // ---------------------------------------------------
+    function isOctober() {
+        return new Date().getMonth() === MONTH_OCTOBER;
+    }
+
+    // ---------------------------------------------------
+    // Estado inicial:
+    //   - 'on'  → forzado activado
+    //   - 'off' → forzado desactivado
+    //   - null  → automático (solo en octubre)
+    // ---------------------------------------------------
+    function getInitialState() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved === 'on') return true;
+        if (saved === 'off') return false;
+        return isOctober();
+    }
+
+    // ---------------------------------------------------
+    // Construir decoraciones (murciélagos + calabazas)
+    // ---------------------------------------------------
+    function buildDecorations() {
+        const container = document.getElementById('halloweenDecorations');
+        if (!container || container.dataset.built === '1') return;
+        container.dataset.built = '1';
+
+        // --- Murciélagos volando ---
+        const numBats = 5;
+        for (let i = 0; i < numBats; i++) {
+            const bat = document.createElement('span');
+            bat.className = 'halloween-bat';
+            bat.textContent = '🦇';
+            bat.style.top = (5 + Math.random() * 60) + 'vh';
+            bat.style.left = '-60px';
+            bat.style.animationDelay = (Math.random() * 12).toFixed(2) + 's';
+            bat.style.animationDuration = (10 + Math.random() * 8).toFixed(2) + 's';
+            bat.style.fontSize = (1.1 + Math.random() * 1.4).toFixed(2) + 'rem';
+            container.appendChild(bat);
+        }
+
+        // --- Calabazas brillantes en posiciones fijas ---
+        const pumpkins = [
+            { style: 'top: 16vh; left: 3vw;', delay: '0s' },
+            { style: 'top: 26vh; right: 3vw;', delay: '1.2s' },
+            { style: 'bottom: 22vh; left: 4vw;', delay: '0.6s' },
+            { style: 'bottom: 32vh; right: 4vw;', delay: '1.8s' }
+        ];
+        pumpkins.forEach(p => {
+            const el = document.createElement('span');
+            el.className = 'halloween-pumpkin';
+            el.textContent = '🎃';
+            el.style.cssText = p.style;
+            el.style.animationDelay = p.delay;
+            el.style.fontSize = (1.6 + Math.random() * 1.2).toFixed(2) + 'rem';
+            container.appendChild(el);
+        });
+    }
+
+    // ---------------------------------------------------
+    // Aplicar / quitar el tema
+    // ---------------------------------------------------
+    function applyHalloween(active) {
+        document.body.classList.toggle('theme-halloween', active);
+
+        const banner = document.getElementById('halloweenBanner');
+        if (banner) banner.style.display = active ? 'flex' : 'none';
+
+        const decor = document.getElementById('halloweenDecorations');
+        if (decor) decor.style.display = active ? 'block' : 'none';
+
+        const toggle = document.getElementById('halloweenToggle');
+        if (toggle) {
+            toggle.classList.toggle('active', active);
+            toggle.title = active ? 'Desactivar Halloween' : 'Activar Halloween';
+        }
+
+        if (active) buildDecorations();
+    }
+
+    // ---------------------------------------------------
+    // Toggle manual (guardado en localStorage)
+    // ---------------------------------------------------
+    function toggleHalloween() {
+        const active = !document.body.classList.contains('theme-halloween');
+        localStorage.setItem(STORAGE_KEY, active ? 'on' : 'off');
+        applyHalloween(active);
+
+        // Notificar a otros scripts (por si más adelante quieres reaccionar)
+        document.dispatchEvent(new CustomEvent('halloweenToggle', { detail: { active } }));
+
+        // Feedback visual
+        if (typeof window.showToast === 'function') {
+            window.showToast(active ? '🎃 ¡Modo Halloween activado!' : '🌿 Modo Halloween desactivado');
+        }
+    }
+
+    // ---------------------------------------------------
+    // Init
+    // ---------------------------------------------------
+    function init() {
+        applyHalloween(getInitialState());
+        const btn = document.getElementById('halloweenToggle');
+        if (btn) btn.addEventListener('click', toggleHalloween);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

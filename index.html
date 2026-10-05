@@ -12,8 +12,15 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="mode-naturaleza">
+
+<!-- Banner Halloween (visible solo si el tema está activo) -->
+<div id="halloweenBanner" class="halloween-banner" style="display:none;">
+    <span>🎃 Edición Halloween · Octubre 🎃</span>
+    <span class="halloween-banner__sub">Envíos embrujados durante todo el mes ✨</span>
+</div>
 
 <header class="header">
     <div class="header__container">
@@ -73,7 +80,7 @@
             <h2 class="featured-title">✨ Productos destacados</h2>
             <div class="swiper featured-swiper" id="featuredSwiper">
                 <div class="swiper-wrapper" id="featuredWrapper">
-                    <!-- Los productos se cargan  -->
+                    <!-- Los productos se cargan dinámicamente -->
                 </div>
                 <div class="swiper-pagination"></div>
                 <div class="swiper-button-next"></div>
@@ -98,7 +105,7 @@
         </div>
     </section>
 
-    <!-- Catálogo con el buscador  -->
+    <!-- Catálogo con el buscador -->
     <section id="catalogo" class="catalog">
         <div class="container">
             <h2 class="catalog__title">Nuestros productos</h2>
@@ -150,7 +157,7 @@
                         <li><i class="fas fa-eye"></i> Bálsamo de Cejas</li>
                         <li><i class="fas fa-scrub"></i> Body Scrub</li>
                         <li><i class="fas fa-clock"></i> Serum Antiedad</li>
-                        <li><i class="fas fa-apple-alt"></i> Vitamina C</li>  
+                        <li><i class="fas fa-apple-alt"></i> Vitamina C</li>
                         <li><i class="fas fa-kiss"></i> Exfoliante Labial</li>
                         <li><i class="fas fa-shampoo"></i> Shampoo</li>
                         <li><i class="fas fa-hand-peace"></i> Acondicionador</li>
@@ -211,8 +218,8 @@
 
 <footer class="footer">
     <div class="container footer__inner">
-        <div class="footer__text"><i class="fas fa-leaf"></i> Naturaleza Salvaje · by Jabberwock</div>
-        <div class="footer__copy">© 2026 · Cuidado natural consciente</div>
+        <div class="footer__text"><i class="fas fa-leaf"></i> Page created by Nash</div>
+        <div class="footer__copy">© 2026 </div>
     </div>
 </footer>
 
@@ -253,8 +260,16 @@
 
 <div id="toast" class="toast">✨ Producto agregado</div>
 
+<!-- ================== HALLOWEEN 🎃 ================== -->
+<!-- Contenedor de decoraciones (murciélagos, calabazas, etc.) -->
+<div id="halloweenDecorations" class="halloween-decorations" style="display:none;"></div>
+
+<!-- Botón flotante para activar/desactivar el tema -->
+<button id="halloweenToggle" class="halloween-toggle" title="Activar Halloween" aria-label="Activar modo Halloween">🎃</button>
+
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script src="script.js"></script>
+<script src="halloween.js"></script>
 </body>
 </html>
